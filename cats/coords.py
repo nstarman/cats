@@ -1,6 +1,6 @@
-"""
-Assumptions and helpers for working with coordinates
-"""
+"""Assumptions and helpers for working with coordinates."""
+
+# THIRD-PARTY
 import astropy.coordinates as coord
 import astropy.units as u
 

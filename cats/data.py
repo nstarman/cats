@@ -1,3 +1,6 @@
+"""Data stuff."""
+
+# THIRD-PARTY
 import astropy.table as at
 import astropy.units as u
 import gala.coordinates as gc
@@ -6,13 +9,13 @@ import scipy.interpolate as sci
 
 
 def make_astro_photo_joined_data(gaia_data, phot_data, track6d):
-    """
+    """Make photometrically joined data set.
+
     Parameters
     ----------
     gaia_data : `pyia.GaiaData`
     phot_data : `cats.photometry.PhotometricSurvey`
     track6d : `galstreams.Track6D`
-
     """
     stream_fr = track6d.stream_frame
 
