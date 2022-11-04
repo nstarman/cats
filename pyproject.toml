@@ -24,6 +24,8 @@
     "matplotlib",
     "astropy",
     "galstreams",
+    "asdf",
+    "asdf-astropy",
     "pyia",
     "astroquery",
     "dustmaps",
