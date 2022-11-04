@@ -68,6 +68,10 @@ def get_gaia_photometry(stardata: StarData):
 def get_abundances(stardata: StarData):
     """Query ancillary data tables for spectroscopy."""
 
+    # TODO:function to return sky coordinates and uncertainties in two skycoord
+    # objects by querying Gaia.
+    # stardata.w, stardata.w_uncert = phasespace_to_skycoords()
+
 
 class Star:
     """Star."""
