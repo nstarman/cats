@@ -1,5 +1,9 @@
+"""Photometry."""
+
+# STDLIB
 import abc
 
+# THIRD-PARTY
 import astropy.coordinates as coord
 import astropy.table as at
 import astropy.units as u
@@ -10,7 +14,17 @@ from pyia import GaiaData
 __all__ = ["PS1Phot", "GaiaDR3Phot", "DESY6Phot"]
 
 
-class PhotometricSurvey(abc.ABC):
+class PhotometricSurvey(metaclass=abc.ABCMeta):
+    """Photometric survey class.
+
+    Parameters
+    ----------
+    data : table-like, str
+        Anything that can be passed into `astropy.table.Table` to construct an
+        astropy table instance, or a string filename (that can be read into an
+        astropy table instance).
+    """
+
     band_names = {}
     extinction_coeffs = {}
     custom_extinction = False
@@ -32,32 +46,17 @@ class PhotometricSurvey(abc.ABC):
                 )
 
     def __init__(self, data) -> None:
-        """
-
-        Parameters
-        ----------
-        data : table-like, str
-            Anything that can be passed into `astropy.table.Table` to construct an
-            astropy table instance, or a string filename (that can be read into an
-            astropy table instance).
-        """
         if isinstance(data, str):
             data = at.Table.read(data)
         self.data = at.Table(data)
 
     @abc.abstractmethod
     def get_skycoord(self):
-        """
-        Return a SkyCoord object from the data table.
-        """
-        pass
+        """Return a SkyCoord object from the data table."""
 
     @abc.abstractmethod
     def get_star_mask(self):
-        """
-        Star-galaxy separation
-        """
-        pass
+        """Star-galaxy separation."""
 
     def get_ext_corrected_phot(self, dustmaps_cls=None):
         if self.custom_extinction:
@@ -104,8 +103,7 @@ class PS1Phot(PhotometricSurvey):
         return coord.SkyCoord(self.data["raMean"] * u.deg, self.data["decMean"] * u.deg)
 
     def get_star_mask(self):
-        """
-        Star/galaxy separation for PS1
+        """Star/galaxy separation for PS1.
 
         See:
         https://outerspace.stsci.edu/display/PANSTARRS/How+to+separate+stars+and+galaxies
@@ -131,9 +129,7 @@ class GaiaDR3Phot(PhotometricSurvey):
         return GaiaData(self.data).get_skycoord(distance=False)
 
     def get_star_mask(self):
-        """
-        Star-galaxy separation:
-        """
+        """Star-galaxy separation."""
         return np.ones(len(self.data), dtype=bool)
 
     def get_ext_corrected_phot(self, dustmaps_cls=None):
@@ -174,9 +170,7 @@ class DESY6Phot(PhotometricSurvey):
         return coord.SkyCoord(self.data["RA"] * u.deg, self.data["DEC"] * u.deg)
 
     def get_star_mask(self):
-        """
-        Star-galaxy separation:
-        """
+        """Star-galaxy separation."""
         return (self.data["EXT_FITVD"] >= 0) & (self.data["EXT_FITVD"] < 2)
 
     def get_ext_corrected_phot(self, dustmaps_cls=None):

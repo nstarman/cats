@@ -1,1 +1,1 @@
-VERSION = "v0.1"
+"""The Community Atlas of Tidal Streams."""
