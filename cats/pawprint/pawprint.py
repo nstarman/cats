@@ -9,8 +9,6 @@ import numpy as np
 import os
 
 
-#class densityClass: #TODO: how to represent densities?
-
 class Footprint2D:
     def __init__(self, vertex_coordinates, footprint_type, stream_frame=None):
         if footprint_type=='sky':
