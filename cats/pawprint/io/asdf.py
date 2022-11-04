@@ -92,8 +92,6 @@ def read_asdf(
 def write_asdf(pawprint: Pawprint, file: str | bytes | os.PathLike) -> None:
     # WARNING this doesn't save the track yet - need schema
     # WARNING the stream frame doesn't save right either
-    fname = f"{pawprint.stream_name}{pawprint.pawprint_ID}.asdf"
-
     tree = {
         "stream_name": pawprint.stream_name,
         "pawprint_ID": pawprint.pawprint_ID,
@@ -119,7 +117,7 @@ def write_asdf(pawprint: Pawprint, file: str | bytes | os.PathLike) -> None:
         tree["on_stream"]["pm"] = None
 
     out = asdf.AsdfFile(tree)
-    out.write_to(fname)
+    out.write_to(file)
 
 
 def asdf_identify(
