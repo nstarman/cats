@@ -6,7 +6,15 @@ from __future__ import annotations
 from astropy.io.registry import UnifiedReadWriteMethod
 
 # LOCAL
-from .connect import PawprintFromFormat, PawprintRead, PawprintToFormat, PawprintWrite
+from cats.pawprint.footprint.cmd import CMDFootprint
+from cats.pawprint.footprint.pm import PMFootprint
+from cats.pawprint.footprint.sky import SkyFootprint
+from cats.pawrint.connect import (
+    PawprintFromFormat,
+    PawprintRead,
+    PawprintToFormat,
+    PawprintWrite,
+)
 
 # class densityClass: #TODO: how to represent densities?
 
@@ -33,12 +41,12 @@ class Pawprint:
         self.stream_frame = data["stream_frame"]
         self.width = data["width"]
         self.skyprint = {
-            "stream": Footprint2D(
+            "stream": SkyFootprint(
                 data["stream_vertices"],
                 footprint_type="sky",
                 stream_frame=self.stream_frame,
             ),
-            "background": Footprint2D(
+            "background": SkyFootprint(
                 data["background_vertices"],
                 footprint_type="sky",
                 stream_frame=self.stream_frame,
@@ -51,7 +59,7 @@ class Pawprint:
         if self.cmd_filters is not None:
             self.cmdprint = {}
             for k in data.cmd_filters.keys():
-                self.cmdprint[k] = Footprint2D(
+                self.cmdprint[k] = CMDFootprint(
                     data["cmd_vertices"][k], footprint_type="cartesian"
                 )
         else:
@@ -59,7 +67,7 @@ class Pawprint:
         if data["pm_vertices"] is not None:
             self.pmprint = {}
             for k in data["pm_vertices"].keys():
-                self.pmprint[k] = Footprint2D(
+                self.pmprint[k] = PMFootprint(
                     data["pm_vertices"][k],
                     footprint_type="sky",
                     stream_frame=self.stream_frame,

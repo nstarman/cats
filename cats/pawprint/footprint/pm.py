@@ -1,37 +1,57 @@
-
 """Pawprint stuff."""
 
 from __future__ import annotations
-from typing import Iterator
+
+# STDLIB
+from collections.abc import MutableMapping
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Iterator
 
 # THIRD-PARTY
 import astropy.units as u
 import numpy as np
-from astropy.coordinates import SkyCoord
-from astropy.table import QTable
-from matplotlib.path import Path as mpl_path
-from dataclasses import dataclass
-from collections.abc import MutableMapping
-from types import MappingProxyType
+from astropy.coordinates import (
+    BaseDifferential,
+    SkyCoord,
+    UnitSphericalCosLatDifferential,
+)
 
+# LOCAL
 from .base import FootprintBase
-from astropy.coordinates import UnitSphericalDifferential
 
 if TYPE_CHECKING:
+    # THIRD-PARTY
     from astropy.coordinates import BaseCoordinateFrame
+
+
+def _get_points(data: BaseDifferential) -> np.ndarray:
+    r = data.represent_as(UnitSphericalCosLatDifferential)
+    return np.c_[r.d_lon_coslat.to_value(u.mas / u.yr), r.d_lat.to_value(u.mas / u.yr)]
 
 
 @dataclass(frozen=True)
 class PMFootprintBase(FootprintBase):
 
+    edges: UnitSphericalCosLatDifferential
     center: SkyCoord
+    is_reflex_corrected: bool
+
+    @property
+    def frame(self) -> BaseCoordinateFrame:
+        return self.center.frame.replicate_without_data()
+
+    @property
+    def vertices(self) -> np.ndarray:
+        return _get_points(self.edges)[:-1, :]  # (N, 2)
 
 
 @dataclass(frozen=True)
 class PMFootprint(PMFootprintBase):
 
-    edges: UnitSphericalDifferential
+    edges: UnitSphericalCosLatDifferential
     center: SkyCoord
+    is_reflex_corrected: bool = True
     name: str | None = None
 
     @property
@@ -44,8 +64,13 @@ class PMFootprint(PMFootprintBase):
 
 
 class CompositePMFootprint(MutableMapping[str, PMFootprintBase], PMFootprintBase):
-
-    def __init__(self, frame: BaseCoordinateFrame, *, name: str | None, **pm_footprints: PMFootprintBase):
+    def __init__(
+        self,
+        frame: BaseCoordinateFrame,
+        *,
+        name: str | None,
+        **pm_footprints: PMFootprintBase,
+    ):
         # frame
         self.frame: BaseCoordinateFrame
         object.__setattr__(self, "frame", frame)
@@ -85,16 +110,17 @@ class CompositePMFootprint(MutableMapping[str, PMFootprintBase], PMFootprintBase
     # ===============================================================
 
     @property
-    def center(self)
+    def is_reflex_corrected(self) -> bool:
+        return all(v.is_reflex_corrected for v in self.values())
 
     @property
     def centers(self) -> MappingProxyType:
-        return MappingProxyType(
-            {
-                k: v.center for k, v in self.items()
-            }
-        )
+        return MappingProxyType({k: v.center for k, v in self.items()})
 
     @property
     def vertices(self) -> np.ndarray:
+        raise NotImplementedError("TODO! just get from edges")
+
+    @property
+    def edges(self) -> np.ndarray:
         raise NotImplementedError("TODO! just get from edges")
